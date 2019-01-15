@@ -45,10 +45,10 @@ class _CallAfter(QtCore.QObject):
     """
 
     # The list of pending calls.
-    _calls = []
+#    _calls = []
 
     # The mutex around the list of pending calls.
-    _calls_mutex = QtCore.QMutex()
+#    _calls_mutex = QtCore.QMutex()
 
     def __init__(self, handler, *args, **kwds):
         """ Initialise the call.
@@ -61,9 +61,9 @@ class _CallAfter(QtCore.QObject):
         self._kwds = kwds
 
         # Add this to the list.
-        self._calls_mutex.lock()
-        self._calls.append(self)
-        self._calls_mutex.unlock()
+#        self._calls_mutex.lock()
+#        self._calls.append(self)
+#        self._calls_mutex.unlock()
 
         # Move to the main GUI thread.
         self.moveToThread(QtGui.QApplication.instance().thread())
@@ -79,23 +79,25 @@ class _CallAfter(QtCore.QObject):
         """
         if event.type() == _QT_TRAITS_EVENT:
             # Invoke the handler
+            event.accept()
             self._handler(*self._args, **self._kwds)
 
-            # We cannot remove from self._calls here. QObjects don't like being
-            # garbage collected during event handlers (there are tracebacks,
-            # plus maybe a memory leak, I think).
-            QtCore.QTimer.singleShot(0, self._finished)
+#            # We cannot remove from self._calls here. QObjects don't like being
+#            # garbage collected during event handlers (there are tracebacks,
+#            # plus maybe a memory leak, I think).
+#            QtCore.QTimer.singleShot(0, self._finished)
+            del event
 
             return True
         else:
             return QtCore.QObject.event(self, event)
 
-    def _finished(self):
-        """ Remove the call from the list, so it can be garbage collected.
-        """
-        self._calls_mutex.lock()
-        del self._calls[self._calls.index(self)]
-        self._calls_mutex.unlock()
+#    def _finished(self):
+#        """ Remove the call from the list, so it can be garbage collected.
+#        """
+#        self._calls_mutex.lock()
+#        del self._calls[self._calls.index(self)]
+#        self._calls_mutex.unlock()
 
 
 def ui_handler(handler, *args, **kwds):
